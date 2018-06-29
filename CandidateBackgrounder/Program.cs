@@ -119,7 +119,21 @@ namespace CandidateBackgrounder
                     result.Add(c);
                 }
                 Console.WriteLine("Output: validators.json");
-                File.WriteAllText("validators.json", JsonConvert.SerializeObject(result));
+                File.WriteAllText("validators.json", JsonConvert.SerializeObject(result.Select(p => new {
+                    p.PublicKey,
+                    p.Votes,
+                    info = new {
+                        p.Info?.Email,
+                        p.Info?.Website,
+                        p.Info?.Details,
+                        p.Info?.Country?.Name,
+                        p.Info?.SocialAccount,
+                        p.Info?.Telegram,
+                        p.Info?.Summary
+                    },
+                    p.Active,
+                    p.State
+                })));
             }
         }
     }
