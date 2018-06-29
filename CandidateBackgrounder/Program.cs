@@ -1,4 +1,5 @@
 ﻿using CandidateBackgrounder.Models;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -19,7 +20,7 @@ namespace CandidateBackgrounder
         {
             while (true)
             {
-                Getvalidators();
+                //Getvalidators();
                 GetTxCount();
             }
         }
@@ -65,8 +66,17 @@ namespace CandidateBackgrounder
                     TxCount = (int)groupItem.Average(p => p.TxCount)
                 });
             }
+            List<int> indexList = new List<int>();
+            List<int> timestampList = new List<int>();
+            List<int> txCountList = new List<int>();
+            foreach (var item in blockgroup)
+            {
+                indexList.Add(item.Index);
+                timestampList.Add(item.Timestamp);
+                txCountList.Add(item.TxCount);
+            }
 
-            File.WriteAllText("txcount.json", JsonConvert.SerializeObject(blockgroup));
+            File.WriteAllText("txcount.json", JsonConvert.SerializeObject(new object[] { indexList, timestampList, txCountList }));
             Console.WriteLine("Output: txcount.json");
         }
 
@@ -109,7 +119,7 @@ namespace CandidateBackgrounder
                 foreach (JObject item in list)
                 {
                     var c = CandidateViewModels.FromJson(item);
-                    c.Info = context.Candidates.FirstOrDefault(p => p.PublicKey == c.PublicKey);
+                    c.Info = context.Candidates.Include(p => p.Country).FirstOrDefault(p => p.PublicKey == c.PublicKey);
                     if (c.Info != null && c.Info.IP != null)
                     {
                         Console.WriteLine($"Test connect state, IP: {c.Info.IP}");
@@ -126,7 +136,7 @@ namespace CandidateBackgrounder
                         p.Info?.Email,
                         p.Info?.Website,
                         p.Info?.Details,
-                        p.Info?.Country?.Name,
+                        Country = p.Info?.Country?.Name,
                         p.Info?.SocialAccount,
                         p.Info?.Telegram,
                         p.Info?.Summary

@@ -19,6 +19,8 @@ namespace CandidateBackgrounder
 
         public DbSet<Candidate> Candidates { get; set; }
 
+        public DbSet<Country> Countries { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             var connectionString = (string)JObject.Parse(File.ReadAllText("Config.json"))["ConnectionString"];
