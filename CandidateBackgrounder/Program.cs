@@ -20,7 +20,7 @@ namespace CandidateBackgrounder
         {
             while (true)
             {
-                //Getvalidators();
+                Getvalidators();
                 GetTxCount();
             }
         }
@@ -53,7 +53,7 @@ namespace CandidateBackgrounder
                 blocklist.RemoveAt(0);
             Console.WriteLine($"Grouping results in progress");
 
-            int step = 2;
+            int step = 100;
             blockgroup.Clear();
             for (int i = 0; i < blocklist.Count; i += step)
             {
@@ -131,14 +131,14 @@ namespace CandidateBackgrounder
                 File.WriteAllText("validators.json", JsonConvert.SerializeObject(result.Select(p => new {
                     p.PublicKey,
                     p.Votes,
-                    Info = new {
-                        p.Info?.Email,
-                        p.Info?.Website,
-                        p.Info?.Details,
-                        Country = p.Info?.Country?.Name,
-                        p.Info?.SocialAccount,
-                        p.Info?.Telegram,
-                        p.Info?.Summary
+                    Info = p.Info == null ? null : new {
+                        p.Info.Email,
+                        p.Info.Website,
+                        p.Info.Details,
+                        Country = p.Info.Country?.Name,
+                        p.Info.SocialAccount,
+                        p.Info.Telegram,
+                        p.Info.Summary
                     },
                     p.Active,
                     p.State
