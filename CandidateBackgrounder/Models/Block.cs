@@ -14,6 +14,8 @@ namespace CandidateBackgrounder.Models
 
         public int Timestamp;
 
+        public int Size;
+
         public int TxCount;
 
         public static Block FromJson(JToken json)
@@ -22,7 +24,8 @@ namespace CandidateBackgrounder.Models
             {
                 Timestamp = (int)json["time"],
                 Index = (int)json["index"],
-                TxCount = json["tx"].Count()
+                TxCount = json["tx"].Count(),
+                Size = (int)json["size"],
             };
             return block;
         }

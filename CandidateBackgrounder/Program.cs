@@ -28,7 +28,6 @@ namespace CandidateBackgrounder
         static List<Block> blocklist = new List<Block>();
         static List<Block> blockgroup = new List<Block>();
         static readonly int blocklistCount = 3600;
-        static readonly int blocklistMaxCount = blocklistCount * 3;
 
         private static void GetTxCount()
         {
@@ -50,11 +49,11 @@ namespace CandidateBackgrounder
                 Console.SetCursorPosition(0, Console.CursorTop);
                 Console.Write($"[GetBlock:{i}], Blocklist Count:{blocklist.Count}");
             }
-            while (blocklist.Count > blocklistMaxCount)
+            while (blocklist.Count > blocklistCount)
                 blocklist.RemoveAt(0);
             Console.WriteLine($"Grouping results in progress");
 
-            int step = 100;
+            int step = 2;
             blockgroup.Clear();
             for (int i = 0; i < blocklist.Count; i += step)
             {
@@ -63,20 +62,20 @@ namespace CandidateBackgrounder
                 {
                     Index = groupItem.First().Index,
                     Timestamp = groupItem.First().Timestamp,
-                    TxCount = (int)groupItem.Average(p => p.TxCount)
+                    TxCount = (int)groupItem.Average(p => p.TxCount),
+                    Size = (int)groupItem.Average(p => p.Size),
                 });
             }
-            List<int> indexList = new List<int>();
-            List<int> timestampList = new List<int>();
-            List<int> txCountList = new List<int>();
+            var result = new BlockViewModels();
             foreach (var item in blockgroup)
             {
-                indexList.Add(item.Index);
-                timestampList.Add(item.Timestamp);
-                txCountList.Add(item.TxCount);
+                result.IndexList.Add(item.Index);
+                result.TimestampList.Add(item.Timestamp);
+                result.TxCountList.Add(item.TxCount);
+                result.SizeList.Add(item.Size);
             }
 
-            File.WriteAllText("txcount.json", JsonConvert.SerializeObject(new object[] { indexList, timestampList, txCountList }));
+            File.WriteAllText("txcount.json", JsonConvert.SerializeObject(result));
             Console.WriteLine("Output: txcount.json");
         }
 
@@ -132,7 +131,7 @@ namespace CandidateBackgrounder
                 File.WriteAllText("validators.json", JsonConvert.SerializeObject(result.Select(p => new {
                     p.PublicKey,
                     p.Votes,
-                    info = new {
+                    Info = new {
                         p.Info?.Email,
                         p.Info?.Website,
                         p.Info?.Details,
