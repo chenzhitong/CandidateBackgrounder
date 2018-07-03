@@ -118,13 +118,7 @@ namespace CandidateBackgrounder
                 foreach (JObject item in list)
                 {
                     var c = CandidateViewModels.FromJson(item);
-                    c.Info = context.Candidates.Include(p => p.Country).FirstOrDefault(p => p.PublicKey == c.PublicKey);
-                    if (c.Info != null && c.Info.IP != null)
-                    {
-                        Console.WriteLine($"Test connect state, IP: {c.Info.IP}");
-                        c.State = Helper.IsConnect(c.Info.IP) ? NodeState.Online : NodeState.Offline;
-                        c.Info.IP = null;
-                    }
+                    c.Info = context.Candidates.FirstOrDefault(p => p.PublicKey == c.PublicKey);
                     result.Add(c);
                 }
                 Console.WriteLine("Output: validators.json");
@@ -134,14 +128,10 @@ namespace CandidateBackgrounder
                     Info = p.Info == null ? null : new {
                         p.Info.Email,
                         p.Info.Website,
-                        p.Info.Details,
-                        Country = p.Info.Country?.Name,
                         p.Info.SocialAccount,
-                        p.Info.Telegram,
                         p.Info.Summary
                     },
-                    p.Active,
-                    p.State
+                    p.Active
                 })));
             }
         }

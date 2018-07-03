@@ -24,8 +24,6 @@ namespace CandidateBackgrounder.Models
                 Active = (bool)obj["active"]
             };
         }
-
-        public NodeState State { get; set; }
     }
 
     public enum NodeState
