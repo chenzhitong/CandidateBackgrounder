@@ -14,8 +14,6 @@ namespace CandidateBackgrounder
 {
     class Program
     {
-        static readonly string RequestURL = (string)JObject.Parse(File.ReadAllText("Config.json"))["RequestURL"];
-
         static void Main(string[] args)
         {
             while (true)
@@ -31,27 +29,29 @@ namespace CandidateBackgrounder
 
         private static void GetTxCount()
         {
-            Console.WriteLine("GetTxCount via Json RPC");
-            var currentBlock = GetBlockCount();
+            var currentBlock = Helper.GetBlockCount();
+            //Initializing data
             if (blocklist.Count < blocklistCount)
             {
                 for (int i = currentBlock - blocklistCount; i < currentBlock; i++)
                 {
-                    blocklist.Add(GetBlock(i));
+                    blocklist.Add(Helper.GetBlock(i));
                     Console.SetCursorPosition(0, Console.CursorTop);
                     Console.Write($"[GetBlock:{i}], Blocklist Count:{blocklist.Count}");
                 }
             }
-            currentBlock = GetBlockCount();
-            for (int i = blocklist[blocklist.Count - 1].Index + 1; i < currentBlock; i++)
+            else
             {
-                blocklist.Add(GetBlock(i));
-                Console.SetCursorPosition(0, Console.CursorTop);
-                Console.Write($"[GetBlock:{i}], Blocklist Count:{blocklist.Count}");
+                for (int i = blocklist[blocklist.Count - 1].Index + 1; i < currentBlock; i++)
+                {
+                    blocklist.Add(Helper.GetBlock(i));
+                    Console.SetCursorPosition(0, Console.CursorTop);
+                    Console.Write($"[GetBlock:{i}], Blocklist Count:{blocklist.Count}");
+                }
+                while (blocklist.Count > blocklistCount)
+                    blocklist.RemoveAt(0);
             }
-            while (blocklist.Count > blocklistCount)
-                blocklist.RemoveAt(0);
-            Console.WriteLine($"Grouping results in progress");
+            Console.WriteLine();
 
             int step = 100;
             blockgroup.Clear();
@@ -74,46 +74,14 @@ namespace CandidateBackgrounder
                 result.TxCountList.Add(item.TxCount);
                 result.SizeList.Add(item.Size);
             }
-
-            File.WriteAllText("txcount.json", JsonConvert.SerializeObject(result));
-            Console.WriteLine("Output: txcount.json");
+            SaveFile("txcount.json", JsonConvert.SerializeObject(result));
         }
-
-        private static Block GetBlock(int index)
-        {
-            var response = Helper.PostWebRequest(RequestURL, $"{{'jsonrpc': '2.0', 'method': 'getblock', 'params': [{index},1],  'id': 1}}");
-            if (string.IsNullOrEmpty(response))
-            {
-                Console.WriteLine("Please run neo-cli.");
-                return null;
-            }
-            return Block.FromJson(JObject.Parse(response)["result"]);
-        }
-
-        private static int GetBlockCount()
-        {
-            var response = Helper.PostWebRequest(RequestURL, "{'jsonrpc': '2.0', 'method': 'getblockcount', 'params': [],  'id': 1}");
-            if (string.IsNullOrEmpty(response))
-            {
-                Console.WriteLine("Please run neo-cli.");
-                return 0;
-            }
-            return (int)JObject.Parse(response)["result"];
-        }
-
+        
         private static void Getvalidators()
         {
             using (var context = new Context())
             {
-                Console.WriteLine("GetValidators via Json RPC");
-                var response = Helper.PostWebRequest(RequestURL, "{'jsonrpc': '2.0', 'method': 'getvalidators', 'params': [],  'id': 1}");
-                if (string.IsNullOrEmpty(response))
-                {
-                    Console.WriteLine("Please run neo-cli.");
-                    return;
-                }
-                var json = JObject.Parse(response)["result"];
-                JArray list = (JArray)json;
+                JArray list = Helper.GetValidators();
                 var result = new List<CandidateViewModels>();
                 foreach (JObject item in list)
                 {
@@ -121,18 +89,32 @@ namespace CandidateBackgrounder
                     c.Info = context.Candidates.FirstOrDefault(p => p.PublicKey == c.PublicKey);
                     result.Add(c);
                 }
-                Console.WriteLine("Output: validators.json");
-                File.WriteAllText("validators.json", JsonConvert.SerializeObject(result.Select(p => new {
+                var text = JsonConvert.SerializeObject(result.OrderByDescending(p => p.Votes).Select(p => new {
                     p.PublicKey,
                     p.Votes,
-                    Info = p.Info == null ? null : new {
+                    Info = p.Info == null ? null : new
+                    {
                         p.Info.Email,
                         p.Info.Website,
                         p.Info.SocialAccount,
                         p.Info.Summary
                     },
                     p.Active
-                })));
+                }));
+                SaveFile("validators.json", text);
+            }
+        }
+
+        private static void SaveFile(string filename, string text)
+        {
+            try
+            {
+                File.WriteAllText(filename, text);
+                Console.WriteLine($"Output: {filename}");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error:" + e.Message);
             }
         }
     }

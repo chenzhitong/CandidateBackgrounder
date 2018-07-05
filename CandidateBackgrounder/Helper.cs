@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CandidateBackgrounder.Models;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -51,6 +53,41 @@ namespace CandidateBackgrounder
             {
                 return false;
             }
+        }
+
+        static readonly string RequestURL = (string)JObject.Parse(File.ReadAllText("Config.json"))["RequestURL"];
+
+        public static Block GetBlock(int index)
+        {
+            var response = Helper.PostWebRequest(RequestURL, $"{{'jsonrpc': '2.0', 'method': 'getblock', 'params': [{index},1],  'id': 1}}");
+            if (string.IsNullOrEmpty(response))
+            {
+                Console.WriteLine("Please run neo-cli.");
+                return null;
+            }
+            return Block.FromJson(JObject.Parse(response)["result"]);
+        }
+
+        public static int GetBlockCount()
+        {
+            var response = Helper.PostWebRequest(RequestURL, "{'jsonrpc': '2.0', 'method': 'getblockcount', 'params': [],  'id': 1}");
+            if (string.IsNullOrEmpty(response))
+            {
+                Console.WriteLine("Please run neo-cli.");
+                return 0;
+            }
+            return (int)JObject.Parse(response)["result"];
+        }
+        
+        public static JArray GetValidators()
+        {
+            var response = Helper.PostWebRequest(Helper.RequestURL, "{'jsonrpc': '2.0', 'method': 'getvalidators', 'params': [],  'id': 1}");
+            if (string.IsNullOrEmpty(response))
+            {
+                Console.WriteLine("Please run neo-cli.");
+                return null;
+            }
+            return (JArray)JObject.Parse(response)["result"];
         }
     }
 }
