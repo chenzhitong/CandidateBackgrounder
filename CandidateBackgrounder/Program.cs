@@ -96,6 +96,8 @@ namespace CandidateBackgrounder
                     p.Votes,
                     Info = p.Info == null ? null : new
                     {
+                        p.Info.Organization,
+                        p.Info.Logo,
                         p.Info.Email,
                         p.Info.Website,
                         p.Info.SocialAccount,
