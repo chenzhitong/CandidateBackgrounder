@@ -1,4 +1,4 @@
 {
-  "ConnectionString": "Server=(localdb)\\mssqllocaldb;Database=aspnet-NeoWeb-294D87C2-BAEA-4BC2-A80F-4E3CB3D1AC66;Trusted_Connection=true;MultipleActiveResultSets=true",
-  "RequestURL": "http://localhost:10332"
+  "ConnectionString": "Server=neo-preview.database.windows.net;user=chenzhitong;password=eF57t4uj343AjpjwjsMo;Database=aspnet-NeoWeb-294D87C2-BAEA-4BC2-A80F-4E3CB3D1AC66;Trusted_Connection=false;MultipleActiveResultSets=true",
+  "RequestURL": "http://seed6.ngd.network:10332"
 }
