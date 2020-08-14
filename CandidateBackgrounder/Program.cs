@@ -21,7 +21,7 @@ namespace CandidateBackgrounder
             {
                 Getvalidators();
                 GetTxCount();
-                Thread.Sleep(1000);
+                Thread.Sleep(15000);
             }
         }
 
@@ -81,32 +81,31 @@ namespace CandidateBackgrounder
         
         private static void Getvalidators()
         {
-            using (var context = new Context())
+            using var context = new Context();
+            JArray list = Helper.GetValidators();
+            var result = new List<CandidateViewModels>();
+            foreach (JObject item in list)
             {
-                JArray list = Helper.GetValidators();
-                var result = new List<CandidateViewModels>();
-                foreach (JObject item in list)
-                {
-                    var c = CandidateViewModels.FromJson(item);
-                    c.Info = context.Candidates.FirstOrDefault(p => p.PublicKey == c.PublicKey);
-                    result.Add(c);
-                }
-                var text = JsonConvert.SerializeObject(result.OrderByDescending(p => p.Votes).Select(p => new {
-                    p.PublicKey,
-                    p.Votes,
-                    Info = p.Info == null ? null : new
-                    {
-                        p.Info.Organization,
-                        p.Info.Logo,
-                        p.Info.Email,
-                        p.Info.Website,
-                        p.Info.SocialAccount,
-                        p.Info.Summary
-                    },
-                    p.Active
-                }));
-                SaveFile("validators.json", text);
+                var c = CandidateViewModels.FromJson(item);
+                c.Info = context.Candidates.FirstOrDefault(p => p.PublicKey == c.PublicKey);
+                result.Add(c);
             }
+            var text = JsonConvert.SerializeObject(result.OrderByDescending(p => p.Votes).Select(p => new
+            {
+                p.PublicKey,
+                p.Votes,
+                Info = p.Info == null ? null : new
+                {
+                    p.Info.Organization,
+                    p.Info.Logo,
+                    p.Info.Email,
+                    p.Info.Website,
+                    p.Info.SocialAccount,
+                    p.Info.Summary
+                },
+                p.Active
+            }));
+            SaveFile("validators.json", text);
         }
 
         private static void SaveFile(string filename, string text)
