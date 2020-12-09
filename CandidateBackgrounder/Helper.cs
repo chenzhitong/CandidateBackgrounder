@@ -59,24 +59,44 @@ namespace CandidateBackgrounder
 
         public static Block GetBlock(int index)
         {
-            var response = Helper.PostWebRequest(RequestURL, $"{{'jsonrpc': '2.0', 'method': 'getblock', 'params': [{index},1],  'id': 1}}");
-            if (string.IsNullOrEmpty(response))
+            for (int i = 0; i < 5; i++)
             {
-                Console.WriteLine("Please run neo-cli.");
-                return null;
+                try
+                {
+                    var response = Helper.PostWebRequest(RequestURL, $"{{'jsonrpc': '2.0', 'method': 'getblock', 'params': [{index},1],  'id': 1}}");
+                    if (string.IsNullOrEmpty(response))
+                    {
+                        Console.WriteLine("Please run neo-cli.");
+                        return null;
+                    }
+                    return Block.FromJson(JObject.Parse(response)["result"]);
+                }
+                catch (Exception)
+                {
+                }
             }
-            return Block.FromJson(JObject.Parse(response)["result"]);
+            return null;
         }
 
         public static int GetBlockCount()
         {
-            var response = Helper.PostWebRequest(RequestURL, "{'jsonrpc': '2.0', 'method': 'getblockcount', 'params': [],  'id': 1}");
-            if (string.IsNullOrEmpty(response))
+            for (int i = 0; i < 5; i++)
             {
-                Console.WriteLine("Please run neo-cli.");
-                return 0;
+                try
+                {
+                    var response = Helper.PostWebRequest(RequestURL, "{'jsonrpc': '2.0', 'method': 'getblockcount', 'params': [],  'id': 1}");
+                    if (string.IsNullOrEmpty(response))
+                    {
+                        Console.WriteLine("Please run neo-cli.");
+                        return 0;
+                    }
+                    return (int)JObject.Parse(response)["result"];
+                }
+                catch (Exception)
+                {
+                }
             }
-            return (int)JObject.Parse(response)["result"];
+            return 0;
         }
         
         public static JArray GetValidators()
